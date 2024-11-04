@@ -4,7 +4,7 @@ import (
   "log"
   "net/http"
 )
-
+// Adding comment line
 func home(w http.ResponseWriter, r *http.Request) {
   w.Write([]byte("Hello from Snippetbox"))
 }
