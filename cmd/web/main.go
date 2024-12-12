@@ -26,9 +26,16 @@ func main() {
   mux.HandleFunc("/", home)
   mux.HandleFunc("/snippet/view", snippetView)
   mux.HandleFunc("/snippet/create", snippetCreate)
+  
+  // Initialize http.Server struct and add ErrorLog field
+  srv := &http.Server{
+    Addr: *addr,
+    ErrorLog: errorLog,
+    Handler: mux,
+  }
 
   // Add address passed in as argument to be printed here
   infoLog.Printf("Starting server on %s", *addr)
-  err := http.ListenAndServe(*addr, mux)
+  err := srv.ListenAndServe()
   errorLog.Fatal(err)
 }
