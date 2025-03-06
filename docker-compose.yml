@@ -1,5 +1,40 @@
 services:
   web:
+    container_name: go_con
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - DATABASE_HOST=${DB_HOST}
+      - DATABASE_PORT=${DB_PORT}
     build: .
     ports:
       - "4000:4000"
+    depends_on:
+      - db
+    restart: always
+    networks:
+      - learning
+
+  db:
+    image: postgres:latest
+    container_name: postgres_con
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - DATABASE_HOST=${DB_HOST}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: always
+    networks:
+      - learning
+
+volumes:
+  pgdata:
+
+networks:
+  learning:
+    driver: bridge
