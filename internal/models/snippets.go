@@ -35,7 +35,6 @@ func (m *SnippetModel) Insert(title string, content string, expires int) (int, e
 	}
 
 	return id, nil
-
 }
 
 func (m *SnippetModel) Get(id int) (*Snippet, error) {
@@ -57,5 +56,37 @@ func (m *SnippetModel) Get(id int) (*Snippet, error) {
 }
 
 func (m *SnippetModel) Latest() ([]*Snippet, error) {
-	return nil, nil
+	// SQL query to grab the most recently created snippets
+	stmt := `select id, title, content, created, expires from snippets
+		where expires > now() order by id desc limit 10`
+
+	rows, err := m.Conn.Query(context.Background(), stmt)
+	if err != nil {
+		return nil, err
+	}
+
+	// makes sure resultset is close before we return the results. close after error check
+	// this way we are sure the database connection is no longer open
+	defer rows.Close()
+
+	snippets := []*Snippet{}
+
+	for rows.Next() {
+		s := &Snippet{}
+		err = rows.Scan(&s.ID, &s.Title, &s.Content, &s.Created, &s.Expires)
+		if err != nil {
+			return nil, err
+		}
+
+		snippets = append(snippets, s)
+	}
+
+	// when rows.Next() finishes, call rows.Err() to retrieve any error that
+	// has was encountered during the iteration. Never assume a successful
+	// iteration was completed over the whole resultset
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return snippets, nil
 }
