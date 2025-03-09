@@ -16,6 +16,13 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Initiate snippets, grabbing latest snippets created
+	snippets, err := app.snippets.Latest()
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
 	files := []string{
 		"./ui/html/base.tmpl",
 		"./ui/html/pages/home.tmpl",
@@ -28,20 +35,15 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = ts.ExecuteTemplate(w, "base", nil)
+	// creates an instance of templateData struct holding snippets list
+	data := &templateData{
+		Snippets: snippets,
+	}
+
+	err = ts.ExecuteTemplate(w, "base", data) // pass in templateData struct
 	if err != nil {
 		app.serverError(w, err)
 	}
-
-	// snippets, err := app.snippets.Latest()
-	// if err != nil {
-	// 	app.serverError(w, err)
-	// 	return
-	// }
-
-	// for _, snippet := range snippets {
-	// 	fmt.Fprintf(w, "%+v\n", snippet)
-	// }
 }
 
 func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
