@@ -24,3 +24,22 @@ func (app *application) clientError(w http.ResponseWriter, status int) {
 func (app *application) notFound(w http.ResponseWriter) {
 	app.clientError(w, http.StatusNotFound)
 }
+
+func (app *application) render(w http.ResponseWriter, status int, page string, data *templateData) {
+	// Grab the correct template from the cache, based on the page name
+	ts, err := app.templateCache[page]
+	if !err {
+		err := fmt.Errorf("the template %s does not exits", page)
+		app.serverError(w, err)
+		return
+	}
+
+	// write out any provided HTTP status code
+	w.WriteHeader(status)
+
+	// execute the template set and write the response body
+	terr := ts.ExecuteTemplate(w, "base", data)
+	if terr != nil {
+		app.serverError(w, terr)
+	}
+}

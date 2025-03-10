@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"html/template"
 	"net/http"
 	"strconv"
 
@@ -23,27 +22,9 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	files := []string{
-		"./ui/html/base.tmpl",
-		"./ui/html/pages/home.tmpl",
-		"./ui/html/partials/nav.tmpl",
-	}
-
-	ts, err := template.ParseFiles(files...)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-
-	// creates an instance of templateData struct holding snippets list
-	data := &templateData{
+	app.render(w, http.StatusOK, "home.tmpl", &templateData{
 		Snippets: snippets,
-	}
-
-	err = ts.ExecuteTemplate(w, "base", data) // pass in templateData struct
-	if err != nil {
-		app.serverError(w, err)
-	}
+	})
 }
 
 func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
@@ -65,29 +46,9 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Initialize a slice contianing the paths to the new html files
-	files := []string{
-		"./ui/html/base.tmpl",
-		"./ui/html/partials/nav.tmpl",
-		"./ui/html/pages/view.tmpl",
-	}
-
-	// Parse the template files
-	ts, err := template.ParseFiles(files...)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-
-	data := &templateData{
+	app.render(w, http.StatusOK, "view.tmpl", &templateData{
 		Snippet: snippet,
-	}
-
-	// Execute the parsed files with templateData inserted
-	err = ts.ExecuteTemplate(w, "base", data)
-	if err != nil {
-		app.serverError(w, err)
-	}
+	})
 }
 
 func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
