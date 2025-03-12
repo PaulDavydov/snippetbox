@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"net/http"
 	"runtime/debug"
+	"time"
 )
 
 // writes a error message, then a stack trace to the errorLog,
@@ -25,6 +27,7 @@ func (app *application) notFound(w http.ResponseWriter) {
 	app.clientError(w, http.StatusNotFound)
 }
 
+// render template pages
 func (app *application) render(w http.ResponseWriter, status int, page string, data *templateData) {
 	// Grab the correct template from the cache, based on the page name
 	ts, err := app.templateCache[page]
@@ -34,12 +37,26 @@ func (app *application) render(w http.ResponseWriter, status int, page string, d
 		return
 	}
 
+	buf := new(bytes.Buffer)
+
+	// Write template to the buffer
+	terr := ts.ExecuteTemplate(buf, "base", data)
+	if terr != nil {
+		app.serverError(w, terr)
+		return
+	}
+
 	// write out any provided HTTP status code
 	w.WriteHeader(status)
 
-	// execute the template set and write the response body
-	terr := ts.ExecuteTemplate(w, "base", data)
-	if terr != nil {
-		app.serverError(w, terr)
+	// write contents of the buffer to the http.ResponseWriter
+	buf.WriteTo(w)
+}
+
+// TemplateData helper that returns a pointer to a templateData struct initialized
+// with the current year. View as a constructor
+func (app *application) newTemplateData(r *http.Request) *templateData {
+	return &templateData{
+		CurrentYear: time.Now().Year(),
 	}
 }

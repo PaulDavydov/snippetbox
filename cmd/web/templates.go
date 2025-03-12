@@ -3,14 +3,29 @@ package main
 import (
 	"html/template"
 	"path/filepath"
+	"time"
 
 	"snippetbox.pauldvyd.net/internal/models"
 )
 
 // Holds dynamic data we want to pass into HTML templates
 type templateData struct {
-	Snippet  *models.Snippet
-	Snippets []*models.Snippet
+	CurrentYear int
+	Snippet     *models.Snippet
+	Snippets    []*models.Snippet
+}
+
+// custom function used within our templates. Can have as many parameters as we want
+// but can only return one value. Time formatting is done by using January 02 2006 15:04
+// as the default. The time package will then adjust properly to your current time
+func currDate(t time.Time) string {
+	return t.Format("02 Jan 2006 at 15:04")
+}
+
+// Map that acts as a global variable. Stores the names and lookup of our
+// custom template functions
+var functions = template.FuncMap{
+	"currDate": currDate,
 }
 
 func newTemplateCache() (map[string]*template.Template, error) {
@@ -27,8 +42,9 @@ func newTemplateCache() (map[string]*template.Template, error) {
 	for _, page := range pages {
 		name := filepath.Base(page)
 
+		// register the FuncMap into the template set before calling any ParseFiles() methods.
 		// parse base tmpl into template set
-		ts, err := template.ParseFiles("./ui/html/base.tmpl")
+		ts, err := template.New(name).Funcs(functions).ParseFiles("./ui/html/base.tmpl")
 		if err != nil {
 			return nil, err
 		}
