@@ -27,6 +27,11 @@ func (app *application) notFound(w http.ResponseWriter) {
 	app.clientError(w, http.StatusNotFound)
 }
 
+// handle 405 method not allowed response
+func (app *application) methodNotAllowed(w http.ResponseWriter) {
+	app.clientError(w, http.StatusMethodNotAllowed)
+}
+
 // render template pages
 func (app *application) render(w http.ResponseWriter, status int, page string, data *templateData) {
 	// Grab the correct template from the cache, based on the page name
