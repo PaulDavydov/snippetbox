@@ -13,6 +13,7 @@ type templateData struct {
 	CurrentYear int
 	Snippet     *models.Snippet
 	Snippets    []*models.Snippet
+	Form        any
 }
 
 // custom function used within our templates. Can have as many parameters as we want
