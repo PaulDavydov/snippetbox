@@ -12,6 +12,7 @@ import (
 	"github.com/joho/godotenv"
 	"snippetbox.pauldvyd.net/internal/models"
 
+	"github.com/go-playground/form/v4"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -20,6 +21,7 @@ type application struct {
 	infoLog       *log.Logger
 	snippets      *models.SnippetModel
 	templateCache map[string]*template.Template
+	formDecoder   *form.Decoder
 }
 
 func main() {
@@ -54,11 +56,14 @@ func main() {
 		errorLog.Fatal(terr)
 	}
 
+	formDecoder := form.NewDecoder()
+
 	app := &application{
 		errorLog:      errorLog,
 		infoLog:       infoLog,
 		snippets:      &models.SnippetModel{Conn: db},
 		templateCache: templateCache,
+		formDecoder:   formDecoder,
 	}
 
 	// Initialize http.Server struct and add ErrorLog field
